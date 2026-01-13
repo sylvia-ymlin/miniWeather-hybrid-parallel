@@ -21,7 +21,7 @@ def plot_single(theta_2d, title, filename, vmin=None, vmax=None):
         vmax = max(abs(theta_2d.min()), abs(theta_2d.max()))
         vmin = -vmax
     
-    im = ax.contourf(theta_2d, levels=100, cmap='coolwarm', vmin=vmin, vmax=vmax)
+    im = ax.contourf(theta_2d, levels=100, cmap='coolwarm', vmin=vmin, vmax=vmax, extend='both')
     ax.set_aspect('equal')
     ax.set_xlabel('x (grid points)', fontsize=14)
     ax.set_ylabel('z (grid points)', fontsize=14)
@@ -35,14 +35,22 @@ def plot_single(theta_2d, title, filename, vmin=None, vmax=None):
     plt.close()
     print(f'Saved: {filename}')
 
+def get_unified_color_range(data, time_indices):
+    """Calculate unified color range for all time steps in a scenario."""
+    all_data = np.concatenate([data[ts] for ts in time_indices])
+    vmax = max(abs(all_data.min()), abs(all_data.max()))
+    return -vmax, vmax
+
 # Rising Thermal
 try:
     data = nc.Dataset('output_thermal_long.nc')
     theta = data.variables['theta'][:]
     t = data.variables['t'][:]
-    for ts in [5, -1]:
+    time_indices = [5, -1]
+    vmin, vmax = get_unified_color_range(theta, time_indices)
+    for ts in time_indices:
         time_val = int(t[ts])
-        plot_single(theta[ts], f'Rising Thermal - {time_val}s', f'docs/thermal_{time_val}s.png')
+        plot_single(theta[ts], f'Rising Thermal - {time_val}s', f'docs/thermal_{time_val}s.png', vmin, vmax)
     data.close()
 except Exception as e:
     print(f'Thermal error: {e}')
@@ -52,9 +60,11 @@ try:
     data = nc.Dataset('output_collision_long.nc')
     theta = data.variables['theta'][:]
     t = data.variables['t'][:]
-    for ts in [2, 4, -1]:
+    time_indices = [2, 4, -1]
+    vmin, vmax = get_unified_color_range(theta, time_indices)
+    for ts in time_indices:
         time_val = int(t[ts])
-        plot_single(theta[ts], f'Colliding Thermals - {time_val}s', f'docs/collision_{time_val}s.png')
+        plot_single(theta[ts], f'Colliding Thermals - {time_val}s', f'docs/collision_{time_val}s.png', vmin, vmax)
     data.close()
 except Exception as e:
     print(f'Collision error: {e}')
@@ -64,9 +74,11 @@ try:
     data = nc.Dataset('output_density_long.nc')
     theta = data.variables['theta'][:]
     t = data.variables['t'][:]
-    for ts in [2, -1]:
+    time_indices = [2, -1]
+    vmin, vmax = get_unified_color_range(theta, time_indices)
+    for ts in time_indices:
         time_val = int(t[ts])
-        plot_single(theta[ts], f'Density Current - {time_val}s', f'docs/density_{time_val}s.png')
+        plot_single(theta[ts], f'Density Current - {time_val}s', f'docs/density_{time_val}s.png', vmin, vmax)
     data.close()
 except Exception as e:
     print(f'Density error: {e}')
@@ -76,9 +88,11 @@ try:
     data = nc.Dataset('output_gravity_long.nc')
     theta = data.variables['theta'][:]
     t = data.variables['t'][:]
-    for ts in [4, -1]:
+    time_indices = [4, -1]
+    vmin, vmax = get_unified_color_range(theta, time_indices)
+    for ts in time_indices:
         time_val = int(t[ts])
-        plot_single(theta[ts], f'Mountain Gravity Waves - {time_val}s', f'docs/gravity_{time_val}s.png')
+        plot_single(theta[ts], f'Mountain Gravity Waves - {time_val}s', f'docs/gravity_{time_val}s.png', vmin, vmax)
     data.close()
 except Exception as e:
     print(f'Gravity Waves error: {e}')
@@ -88,9 +102,11 @@ try:
     data = nc.Dataset('output_injection_long.nc')
     theta = data.variables['theta'][:]
     t = data.variables['t'][:]
-    for ts in [3, -1]:
+    time_indices = [3, -1]
+    vmin, vmax = get_unified_color_range(theta, time_indices)
+    for ts in time_indices:
         time_val = int(t[ts])
-        plot_single(theta[ts], f'Injection - {time_val}s', f'docs/injection_{time_val}s.png')
+        plot_single(theta[ts], f'Injection - {time_val}s', f'docs/injection_{time_val}s.png', vmin, vmax)
     data.close()
 except Exception as e:
     print(f'Injection error: {e}')
