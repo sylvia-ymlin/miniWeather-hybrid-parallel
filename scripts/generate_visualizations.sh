@@ -14,6 +14,10 @@ if [ ! -f "$BUILD_DIR/miniWeather_mpi" ]; then
     exit 1
 fi
 
+# Allow OpenMPI to run as root (for container environments)
+export OMPI_ALLOW_RUN_AS_ROOT=1
+export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+
 echo "Generating visualization data for all scenarios..."
 echo "Note: This requires PNetCDF enabled build"
 echo ""
