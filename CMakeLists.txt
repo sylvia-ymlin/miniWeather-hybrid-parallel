@@ -55,7 +55,21 @@ endif()
 # PNetCDF support (Parallel NetCDF)
 # ============================================================================
 option(ENABLE_PNETCDF "Enable Parallel NetCDF output" OFF)
-if(NOT ENABLE_PNETCDF)
+if(ENABLE_PNETCDF)
+    # Try to find PNetCDF using pkg-config
+    find_package(PkgConfig QUIET)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(PNETCDF IMPORTED_TARGET pnetcdf)
+    endif()
+    if(PNETCDF_FOUND)
+        message(STATUS "Found PNetCDF: ${PNETCDF_LIBRARIES}")
+        # Link PNetCDF to MPI target
+        target_link_libraries(miniWeather_mpi PUBLIC PkgConfig::PNETCDF)
+    else()
+        message(WARNING "PNetCDF not found, output will be disabled")
+        add_definitions(-D_NO_PNETCDF)
+    endif()
+else()
     add_definitions(-D_NO_PNETCDF)
 endif()
 
