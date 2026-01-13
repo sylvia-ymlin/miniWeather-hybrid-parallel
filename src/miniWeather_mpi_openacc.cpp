@@ -763,6 +763,7 @@ double sample_ellipse_cosine( double x , double z , double amp , double x0 , dou
 //Output the fluid state (state) to a NetCDF file at a given elapsed model time (etime)
 //The file I/O uses parallel-netcdf, the only external library required for this mini-app.
 //If it's too cumbersome, you can comment the I/O out, but you'll miss out on some potentially cool graphics
+#ifndef _NO_PNETCDF
 void output( double *state , double etime ) {
   int ncid, t_dimid, x_dimid, z_dimid, dens_varid, uwnd_varid, wwnd_varid, theta_varid, t_varid, dimids[3];
   int i, k, ind_r, ind_u, ind_w, ind_t;
@@ -867,6 +868,12 @@ void ncwrap( int ierr , int line ) {
     exit(-1);
   }
 }
+#else
+// Stub function when PNetCDF is not available
+void output( double *state , double etime ) {
+  if (mainproc) { printf("Output disabled (PNetCDF not found)\n"); }
+}
+#endif
 
 
 void finalize() {
