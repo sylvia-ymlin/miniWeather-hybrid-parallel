@@ -6,6 +6,7 @@ set -e
 
 cd "$(dirname "$0")/.."
 BUILD_DIR="${1:-build}"
+MPI_RANKS="${2:-4}"  # Default to 4 processes, can be overridden
 
 if [ ! -f "$BUILD_DIR/miniWeather_mpi" ]; then
     echo "Error: $BUILD_DIR/miniWeather_mpi not found"
@@ -20,11 +21,12 @@ export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
 
 echo "Generating visualization data for all scenarios..."
 echo "Note: This requires PNetCDF enabled build"
+echo "Using $MPI_RANKS MPI processes for faster execution"
 echo ""
 
 # Colliding Thermals (DATA_SPEC=1, sim_time=700, out_freq=100)
-echo "[1/3] Running Colliding Thermals (700s)..."
-mpirun -n 1 "$BUILD_DIR/miniWeather_mpi" --data 1 --nx 400 --nz 200 --time 700 --freq 100
+echo "[1/3] Running Colliding Thermals (700s) with $MPI_RANKS processes..."
+mpirun -n $MPI_RANKS "$BUILD_DIR/miniWeather_mpi" --data 1 --nx 400 --nz 200 --time 700 --freq 100
 if [ -f output.nc ]; then
     mv output.nc output_collision_long.nc
     echo "  ✓ Generated output_collision_long.nc"
@@ -34,8 +36,8 @@ else
 fi
 
 # Mountain Gravity Waves (DATA_SPEC=3, sim_time=1500, out_freq=300)
-echo "[2/3] Running Mountain Gravity Waves (1500s)..."
-mpirun -n 1 "$BUILD_DIR/miniWeather_mpi" --data 3 --nx 400 --nz 200 --time 1500 --freq 300
+echo "[2/3] Running Mountain Gravity Waves (1500s) with $MPI_RANKS processes..."
+mpirun -n $MPI_RANKS "$BUILD_DIR/miniWeather_mpi" --data 3 --nx 400 --nz 200 --time 1500 --freq 300
 if [ -f output.nc ]; then
     mv output.nc output_gravity_long.nc
     echo "  ✓ Generated output_gravity_long.nc"
@@ -44,8 +46,8 @@ else
 fi
 
 # Injection (DATA_SPEC=6, sim_time=1200, out_freq=300)
-echo "[3/3] Running Injection (1200s)..."
-mpirun -n 1 "$BUILD_DIR/miniWeather_mpi" --data 6 --nx 400 --nz 200 --time 1200 --freq 300
+echo "[3/3] Running Injection (1200s) with $MPI_RANKS processes..."
+mpirun -n $MPI_RANKS "$BUILD_DIR/miniWeather_mpi" --data 6 --nx 400 --nz 200 --time 1200 --freq 300
 if [ -f output.nc ]; then
     mv output.nc output_injection_long.nc
     echo "  ✓ Generated output_injection_long.nc"
