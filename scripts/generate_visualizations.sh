@@ -25,17 +25,33 @@ echo ""
 # Colliding Thermals (DATA_SPEC=1, sim_time=700, out_freq=100)
 echo "[1/3] Running Colliding Thermals (700s)..."
 mpirun -n 1 "$BUILD_DIR/miniWeather_mpi" --data 1 --nx 400 --nz 200 --time 700 --freq 100
-mv output.nc output_collision_long.nc 2>/dev/null || echo "  Note: output.nc may not exist if PNetCDF not enabled"
+if [ -f output.nc ]; then
+    mv output.nc output_collision_long.nc
+    echo "  ✓ Generated output_collision_long.nc"
+else
+    echo "  ✗ ERROR: output.nc not generated (PNetCDF may not be enabled/installed)"
+    echo "  Please build with: cmake .. -DENABLE_PNETCDF=ON && make"
+fi
 
 # Mountain Gravity Waves (DATA_SPEC=3, sim_time=1500, out_freq=300)
 echo "[2/3] Running Mountain Gravity Waves (1500s)..."
 mpirun -n 1 "$BUILD_DIR/miniWeather_mpi" --data 3 --nx 400 --nz 200 --time 1500 --freq 300
-mv output.nc output_gravity_long.nc 2>/dev/null || echo "  Note: output.nc may not exist if PNetCDF not enabled"
+if [ -f output.nc ]; then
+    mv output.nc output_gravity_long.nc
+    echo "  ✓ Generated output_gravity_long.nc"
+else
+    echo "  ✗ ERROR: output.nc not generated (PNetCDF may not be enabled/installed)"
+fi
 
 # Injection (DATA_SPEC=6, sim_time=1200, out_freq=300)
 echo "[3/3] Running Injection (1200s)..."
 mpirun -n 1 "$BUILD_DIR/miniWeather_mpi" --data 6 --nx 400 --nz 200 --time 1200 --freq 300
-mv output.nc output_injection_long.nc 2>/dev/null || echo "  Note: output.nc may not exist if PNetCDF not enabled"
+if [ -f output.nc ]; then
+    mv output.nc output_injection_long.nc
+    echo "  ✓ Generated output_injection_long.nc"
+else
+    echo "  ✗ ERROR: output.nc not generated (PNetCDF may not be enabled/installed)"
+fi
 
 echo ""
 echo "Done! Now run: python3 scripts/visualize_pro.py"
