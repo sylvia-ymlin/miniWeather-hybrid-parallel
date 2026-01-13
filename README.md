@@ -6,6 +6,18 @@ A scalable solver for the **compressible Euler equations** in standard atmospher
 
 ---
 
+## Simulation Output
+
+![All Scenarios](docs/all_scenarios.png)
+
+_Four atmospheric dynamics scenarios simulated by miniWeather (400×200 grid, 100s simulation):_
+- **Colliding Thermals**: Two thermal bubbles colliding mid-air
+- **Rising Thermal Bubble**: Classic buoyancy-driven convection
+- **Internal Gravity Waves**: Wave propagation in stratified atmosphere  
+- **Density Current**: Cold front propagation (downslope flow)
+
+---
+
 ## Mathematical Foundation
 
 ### Governing Equations (2D Compressible Euler)
