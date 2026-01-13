@@ -2,7 +2,7 @@
 # Test if PNetCDF is available and working
 # Run a small test to verify output generation
 
-set -e
+# Don't exit on error, we want to see the results
 
 cd "$(dirname "$0")/.."
 BUILD_DIR="${1:-build}"
