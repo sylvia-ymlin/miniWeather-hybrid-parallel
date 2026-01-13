@@ -783,9 +783,11 @@ void output( double *state , double etime ) {
   etimearr = (double *) malloc(1    *sizeof(double));
 
   //If the elapsed time is zero, create the file. Otherwise, open the file
+  MPI_Info info;
+  MPI_Info_create(&info);
   if (etime == 0) {
     //Create the file
-    ncwrap( ncmpi_create( MPI_COMM_WORLD , "output.nc" , NC_CLOBBER , MPI_INFO_NULL , &ncid ) , __LINE__ );
+    ncwrap( ncmpi_create( MPI_COMM_WORLD , "output.nc" , NC_CLOBBER , info , &ncid ) , __LINE__ );
     //Create the dimensions
     ncwrap( ncmpi_def_dim( ncid , "t" , (MPI_Offset) NC_UNLIMITED , &t_dimid ) , __LINE__ );
     ncwrap( ncmpi_def_dim( ncid , "x" , (MPI_Offset) nx_glob      , &x_dimid ) , __LINE__ );
@@ -802,7 +804,7 @@ void output( double *state , double etime ) {
     ncwrap( ncmpi_enddef( ncid ) , __LINE__ );
   } else {
     //Open the file
-    ncwrap( ncmpi_open( MPI_COMM_WORLD , "output.nc" , NC_WRITE , MPI_INFO_NULL , &ncid ) , __LINE__ );
+    ncwrap( ncmpi_open( MPI_COMM_WORLD , "output.nc" , NC_WRITE , info , &ncid ) , __LINE__ );
     //Get the variable IDs
     ncwrap( ncmpi_inq_varid( ncid , "dens"  ,  &dens_varid ) , __LINE__ );
     ncwrap( ncmpi_inq_varid( ncid , "uwnd"  ,  &uwnd_varid ) , __LINE__ );
@@ -847,6 +849,7 @@ void output( double *state , double etime ) {
 
   //Close the file
   ncwrap( ncmpi_close(ncid) , __LINE__ );
+  MPI_Info_free(&info);
 
   //Increment the number of outputs
   num_out = num_out + 1;
