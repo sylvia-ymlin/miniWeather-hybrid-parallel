@@ -71,5 +71,29 @@ try:
 except Exception as e:
     print(f'Density error: {e}')
 
+# Mountain Gravity Waves
+try:
+    data = nc.Dataset('output_gravity_long.nc')
+    theta = data.variables['theta'][:]
+    t = data.variables['t'][:]
+    for ts in [4, -1]:
+        time_val = int(t[ts])
+        plot_single(theta[ts], f'Mountain Gravity Waves - {time_val}s', f'docs/gravity_{time_val}s.png')
+    data.close()
+except Exception as e:
+    print(f'Gravity Waves error: {e}')
+
+# Injection
+try:
+    data = nc.Dataset('output_injection_long.nc')
+    theta = data.variables['theta'][:]
+    t = data.variables['t'][:]
+    for ts in [3, -1]:
+        time_val = int(t[ts])
+        plot_single(theta[ts], f'Injection - {time_val}s', f'docs/injection_{time_val}s.png')
+    data.close()
+except Exception as e:
+    print(f'Injection error: {e}')
+
 print('\n=== Done ===')
 
