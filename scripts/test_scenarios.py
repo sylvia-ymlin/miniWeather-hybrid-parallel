@@ -56,8 +56,17 @@ def run_test(exe, scenario, mpi_ranks=None, verbose=False):
     
     # Build command
     cmd = []
+    env = os.environ.copy()
     if mpi_ranks and mpi_ranks > 1:
         cmd = ['mpirun', '-np', str(mpi_ranks)]
+        # Allow OpenMPI to run as root (environment variables are harmless for MPICH)
+        # Check if running as root
+        try:
+            if os.geteuid() == 0:  # root user (Unix/Linux only)
+                env['OMPI_ALLOW_RUN_AS_ROOT'] = '1'
+                env['OMPI_ALLOW_RUN_AS_ROOT_CONFIRM'] = '1'
+        except AttributeError:
+            pass  # Windows or geteuid() not available
     cmd.append(exe)
     cmd.extend(['--nx', str(nx), '--nz', str(nz), 
                 '--time', str(sim_time), '--data', str(data_spec),
@@ -67,7 +76,7 @@ def run_test(exe, scenario, mpi_ranks=None, verbose=False):
         print(f"  Running: {' '.join(cmd)}")
     
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300, env=env)
         output = result.stdout + result.stderr
         
         if result.returncode != 0:
