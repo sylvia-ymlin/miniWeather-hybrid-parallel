@@ -9,15 +9,15 @@ A scalable solver for the **compressible Euler equations** in standard atmospher
 ## Simulation Output
 
 ### Rising Thermal (500s)
-![Thermal 500s](docs/thermal_500s.png)
+<img src="docs/thermal_500s.png" width="600" alt="Thermal 500s">
 _Classic "mushroom cloud" convective plumes with counter-rotating vortices at 500 seconds._
 
 ### Rising Thermal (1000s)
-![Thermal 1000s](docs/thermal_999s.png)
+<img src="docs/thermal_999s.png" width="600" alt="Thermal 1000s">
 _Fully developed turbulent convection with chaotic vortex structures at 1000 seconds._
 
 ### Density Current / Cold Front (600s)
-![Density 600s](docs/density_600s.png)
+<img src="docs/density_600s.png" width="600" alt="Density 600s">
 _Cold air mass propagating along the surface, characteristic of atmospheric fronts._
 
 ---
@@ -28,7 +28,7 @@ _Cold air mass propagating along the surface, characteristic of atmospheric fron
 
 The solver integrates the conservation laws for density, momentum, and potential temperature:
 
-$$
+\[
 \frac{\partial}{\partial t}
 \begin{pmatrix} \rho \\ \rho u \\ \rho w \\ \rho \theta \end{pmatrix}
 + \frac{\partial}{\partial x}
@@ -37,14 +37,14 @@ $$
 \begin{pmatrix} \rho w \\ \rho u w \\ \rho w^2 + p \\ \rho w \theta \end{pmatrix}
 =
 \begin{pmatrix} 0 \\ 0 \\ -\rho g \\ 0 \end{pmatrix}
-$$
+\]
 
 where:
-- $\rho$ : density (kg/m³)
-- $u, w$ : horizontal and vertical velocity (m/s)
-- $\theta$ : potential temperature (K)
-- $p = C_0 (\rho \theta)^\gamma$ : pressure via equation of state
-- $g = 9.8$ m/s² : gravitational acceleration
+- $\rho$：density (kg/m³)
+- $u, w$：horizontal and vertical velocity (m/s)
+- $\theta$：potential temperature (K)
+- $p = C_0 (\rho \theta)^\gamma$：pressure via equation of state
+- $g = 9.8$ m/s²：gravitational acceleration
 
 ### Boundary Conditions
 
@@ -114,12 +114,14 @@ mkdir build && cd build
 cmake .. 
 make -j
 
-# 2. With GPU Offloading (OpenACC - requires nvc++)
+# 2. With GPU Offloading (OpenACC - requires NVIDIA HPC SDK nvc++)
 nvc++ -acc -Minfo=accel -o miniWeather_openacc src/miniWeather_mpi_openacc.cpp -lmpi
 
 # 3. With OpenMP Target Offloading (requires clang++ or nvc++)
 cmake .. -DENABLE_OMP_TARGET=ON -DCMAKE_CXX_COMPILER=nvc++
 make -j
+
+**Note**: OpenACC (#2) and OpenMP Target (#3) are **alternative GPU implementations**, not mutually exclusive builds. For NVIDIA GPUs, OpenACC is typically more mature and recommended. OpenMP Target offers better portability across GPU vendors (AMD, Intel) but may have lower performance on NVIDIA hardware.
 
 # 4. Custom Grid Size
 cmake .. -DNX=400 -DNZ=200 -DSIM_TIME=100
@@ -144,37 +146,28 @@ OMP_NUM_THREADS=4 mpirun -n 2 ./miniWeather_mpi --nx 400 --nz 200 --time 10
 
 ### OpenMP Thread Scaling & Hybrid Comparison
 
-![OpenMP Scaling](docs/openmp_scaling_results.png)
+<img src="docs/openmp_scaling_results.png" width="700" alt="OpenMP Scaling">
 
 _Intel Xeon Platinum 8358P @ 2.60GHz, 400×200 grid, 10s simulation. The hybrid 2×4 configuration outperforms pure OpenMP by reducing memory contention._
 
 ### CPU vs GPU (OpenACC) Performance
 
-![CPU GPU Comparison](docs/cpu_gpu_comparison.png)
+<img src="docs/cpu_gpu_comparison.png" width="700" alt="CPU GPU Comparison">
 
 _**Measured data**: GPU achieves **15.6× speedup** at 400×200 grid. All tests on AutoDL Cloud (RTX 3090 + Intel Xeon Platinum)._
 
 ### MPI Strong/Weak Scaling Analysis
 
-![MPI Scaling](docs/scaling_results.png)
+<img src="docs/scaling_results.png" width="700" alt="MPI Scaling">
 
-### Performance Analysis & Known Limitations
+_Note: Scaling plots use log-log axes for better visualization of parallel efficiency. Ideal strong scaling would follow a -1 slope line on a log-log plot._
 
-#### Why Hybrid (1×4) is Slower than Pure MPI (4×1)?
+### Performance Analysis
 
-At small core counts (≤4), the **OpenMP thread creation overhead** dominates:
-- Thread fork/join cost: ~10-50 μs per parallel region
-- With 1000+ timesteps, this accumulates to significant overhead
-- Pure MPI avoids this by using persistent processes
-
-**Recommendation**: Hybrid mode benefits emerge at **≥8 cores** where reduced MPI communication outweighs thread overhead.
-
-#### Weak Scaling Efficiency Drop (33% at 4 Ranks)
-
-The observed efficiency degradation is due to **memory bandwidth saturation**:
-- Apple M-series unified memory: ~200 GB/s shared bandwidth
-- 4 MPI processes compete for the same memory controller
-- **Planned optimization**: Implement communication-computation overlap using `MPI_Ialltoall` with pipelined halo updates
+**Hybrid Parallelism Best Practices**:
+- **MPI Ranks per node**: Should equal the number of physical CPU sockets
+- **OpenMP threads per rank**: Should fill the cores per socket (e.g., 2 sockets × 16 cores = 2 MPI ranks × 16 threads)
+- This minimizes inter-node communication while maximizing intra-node parallelism
 
 ---
 
@@ -182,13 +175,15 @@ The observed efficiency degradation is due to **memory bandwidth saturation**:
 
 All 5 test cases from the original [miniWeather](https://github.com/mrnorman/miniWeather) are implemented:
 
-| Scenario | DATA_SPEC | Description | Recommended `sim_time` |
-|:---------|:----------|:------------|:-----------------------|
-| **Rising Thermal** | 2 | Warm bubble rises due to buoyancy, forming "mushroom cloud" | 1000s |
-| **Colliding Thermals** | 1 | Cold/warm bubbles collide, generating turbulent eddies | 700s |
-| **Mountain Gravity Waves** | 3 | Horizontal wind over stable stratification | 1500s |
-| **Density Current** | 5 | Cold front crashes into ground, propagates horizontally | 600s |
-| **Injection** | 6 | Fast cold jet injected from left boundary | 1200s |
+| Scenario | DATA_SPEC | Initialization Function | Description | Recommended `sim_time` |
+|:---------|:----------|:------------------------|:------------|:-----------------------|
+| **Rising Thermal** | 2 | `thermal(x, z, r, u, w, t, hr, ht)` | Warm bubble rises due to buoyancy, forming "mushroom cloud" | 1000s |
+| **Colliding Thermals** | 1 | `collision(x, z, r, u, w, t, hr, ht)` | Cold/warm bubbles collide, generating turbulent eddies | 700s |
+| **Mountain Gravity Waves** | 3 | `gravity_waves(x, z, r, u, w, t, hr, ht)` | Horizontal wind over stable stratification | 1500s |
+| **Density Current** | 5 | `density_current(x, z, r, u, w, t, hr, ht)` | Cold front crashes into ground, propagates horizontally | 600s |
+| **Injection** | 6 | `injection(x, z, r, u, w, t, hr, ht)` | Fast cold jet injected from left boundary | 1200s |
+
+**Initialization Logic**: Each `DATA_SPEC` value maps to a corresponding initialization function that sets the initial fluid state ($\rho, u, w, \theta$) using Gauss-Legendre quadrature (3×3 integration points per cell).
 
 ```bash
 # Run a specific scenario
@@ -222,9 +217,11 @@ ctest -L individual -R Thermal  # Single scenario test
 | **Collision** | `d_mass=-5.27e-15` | `d_mass=2.42e-14` | ✅ PASS |
 | **Gravity Waves** | `d_mass=2.38e-14` | `d_mass=-1.67e-14` | ✅ PASS |
 | **Density Current** | `d_mass=-3.52e-15` | `d_mass=2.19e-14` | ✅ PASS |
-| **Injection** | `d_mass=1.80e-02` | `d_mass=1.80e-02` | ✅ PASS |
+| **Injection** | `d_mass=1.80e-02` | `d_mass=1.80e-02` | ✅ PASS* |
 
 **CTest Integration**: 9/9 tests passed (100% success rate)
+
+\* **Injection scenario note**: This test case intentionally injects mass from the domain boundary, so the observed `d_mass ≈ 1.8e-02` represents the expected injected mass, not a numerical error. Mass conservation validation is disabled for this scenario.
 
 ```bash
 # Example quick test output
@@ -248,7 +245,7 @@ Results: 2 passed, 0 failed
 | Metric | Threshold | Explanation |
 |:-------|:----------|:------------|
 | **Mass Change** | `|d_mass| < 1e-13` | Must be machine precision |
-| **Energy Change** | `d_te < 0, |d_te| < 4.5e-5` | Must be negative (dissipation) |
+| **Energy Change** | `d_te < 0, |d_te| < 4.5e-5` | Must be negative (dissipation). The total energy should decrease due to numerical diffusion (TVD scheme) and physical viscosity. Threshold `4.5e-5` corresponds to ~0.01% relative energy loss over the simulation duration. |
 
 ---
 
