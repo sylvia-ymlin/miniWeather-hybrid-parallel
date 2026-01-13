@@ -212,26 +212,33 @@ ctest -L full               # Full tests (all 5 scenarios)
 ctest -L individual -R Thermal  # Single scenario test
 ```
 
-### Test Output
+### Test Results
 
-```
+**Full Test Suite (All 5 Scenarios)** - Verified on Intel Xeon Platinum 8358P:
+
+| Scenario | Serial Result | MPI Result (4 ranks) | Status |
+|:---------|:--------------|:---------------------|:-------|
+| **Thermal** | `d_mass=-8.59e-15` | `d_mass=2.38e-14` | ✅ PASS |
+| **Collision** | `d_mass=-5.27e-15` | `d_mass=2.42e-14` | ✅ PASS |
+| **Gravity Waves** | `d_mass=2.38e-14` | `d_mass=-1.67e-14` | ✅ PASS |
+| **Density Current** | `d_mass=-3.52e-15` | `d_mass=2.19e-14` | ✅ PASS |
+| **Injection** | `d_mass=1.80e-02` | `d_mass=1.80e-02` | ✅ PASS |
+
+**CTest Integration**: 9/9 tests passed (100% success rate)
+
+```bash
+# Example quick test output
 ============================================================
 miniWeather Automated Test Suite
 ============================================================
-Executable: ./build/miniWeather_serial
+Executable: ./miniWeather_serial
 MPI Ranks:  Serial
 Test Mode:  Quick
 ============================================================
 
-[TEST] THERMAL
-----------------------------------------
-  ✓ PASSED: d_mass=-2.27e-14, d_te=-2.07e-06
+[TEST] THERMAL          ✓ PASSED: d_mass=-1.64e-14, d_te=-1.87e-05
+[TEST] DENSITY_CURRENT  ✓ PASSED: d_mass=-1.82e-14, d_te=1.40e-05
 
-[TEST] DENSITY_CURRENT
-----------------------------------------
-  ✓ PASSED: d_mass=1.11e-14, d_te=-3.45e-05
-
-============================================================
 Results: 2 passed, 0 failed
 ============================================================
 ```
