@@ -28,7 +28,7 @@ _Cold air mass propagating along the surface, characteristic of atmospheric fron
 
 The solver integrates the conservation laws for density, momentum, and potential temperature:
 
-\[
+$$
 \frac{\partial}{\partial t}
 \begin{pmatrix} \rho \\ \rho u \\ \rho w \\ \rho \theta \end{pmatrix}
 + \frac{\partial}{\partial x}
@@ -37,7 +37,7 @@ The solver integrates the conservation laws for density, momentum, and potential
 \begin{pmatrix} \rho w \\ \rho u w \\ \rho w^2 + p \\ \rho w \theta \end{pmatrix}
 =
 \begin{pmatrix} 0 \\ 0 \\ -\rho g \\ 0 \end{pmatrix}
-\]
+$$
 
 where:
 - $\rho$：density (kg/m³)
