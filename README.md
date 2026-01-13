@@ -8,13 +8,17 @@ A scalable solver for the **compressible Euler equations** in standard atmospher
 
 ## Simulation Output
 
-![All Scenarios](docs/all_scenarios.png)
+### Rising Thermal (500s)
+![Thermal 500s](docs/thermal_500s.png)
+_Classic "mushroom cloud" convective plumes with counter-rotating vortices at 500 seconds._
 
-_Four atmospheric dynamics scenarios simulated by miniWeather (400×200 grid, 100s simulation):_
-- **Colliding Thermals**: Two thermal bubbles colliding mid-air
-- **Rising Thermal Bubble**: Classic buoyancy-driven convection
-- **Internal Gravity Waves**: Wave propagation in stratified atmosphere  
-- **Density Current**: Cold front propagation (downslope flow)
+### Rising Thermal (1000s)
+![Thermal 1000s](docs/thermal_999s.png)
+_Fully developed turbulent convection with chaotic vortex structures at 1000 seconds._
+
+### Density Current / Cold Front (600s)
+![Density 600s](docs/density_600s.png)
+_Cold air mass propagating along the surface, characteristic of atmospheric fronts._
 
 ---
 
