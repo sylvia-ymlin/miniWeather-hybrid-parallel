@@ -325,10 +325,13 @@ void MiniWeatherSimulation::semi_discrete_step(double *state_init,
   }
 
   /////////////////////////////////////////////////
-  // TODO: THREAD ME
+  // OpenMP threading for tendency application
+  // Note: Cannot parallelize over ll due to GRAVITY_WAVES case modifying shared tend
   /////////////////////////////////////////////////
   // Apply the tendencies to the fluid state
   for (ll = 0; ll < NUM_VARS; ll++) {
+#pragma omp parallel for collapse(2) default(shared)                           \
+    private(k, i, x, z, wpert, dist, x0, z0, xrad, zrad, amp, inds, indt, indw)
     for (k = 0; k < nz; k++) {
       for (i = 0; i < nx; i++) {
         if (data_spec_int == DATA_SPEC_GRAVITY_WAVES) {
@@ -380,7 +383,7 @@ void MiniWeatherSimulation::compute_tendencies_x(double *state, double *flux,
   // Compute the hyperviscosity coefficient
   hv_coef = -hv_beta * dx / (16 * dt);
   /////////////////////////////////////////////////
-  // TODO: THREAD ME
+  // OpenMP threading for flux computation
   /////////////////////////////////////////////////
   // Compute fluxes in the x-direction for each cell
 #pragma omp parallel for collapse(2) default(shared) private(                  \
@@ -425,7 +428,7 @@ void MiniWeatherSimulation::compute_tendencies_x(double *state, double *flux,
   }
 
   /////////////////////////////////////////////////
-  // TODO: THREAD ME
+  // OpenMP threading for tendency computation
   /////////////////////////////////////////////////
   // Use the fluxes to compute tendencies for each cell
 #pragma omp parallel for collapse(3) default(shared) private(indt, indf1, indf2)
@@ -453,9 +456,9 @@ void MiniWeatherSimulation::compute_tendencies_z(double *state, double *flux,
   // Compute the hyperviscosity coefficient
   hv_coef = -hv_beta * dz / (16 * dt);
   /////////////////////////////////////////////////
-  // TODO: THREAD ME
+  // OpenMP threading for flux computation
   /////////////////////////////////////////////////
-  // Compute fluxes in the x-direction for each cell
+  // Compute fluxes in the z-direction for each cell
 #pragma omp parallel for collapse(2) default(shared) private(                  \
     ll, s, inds, stencil, vals, d3_vals, r, u, w, t, p)
   for (k = 0; k < nz + 1; k++) {
@@ -503,7 +506,7 @@ void MiniWeatherSimulation::compute_tendencies_z(double *state, double *flux,
   }
 
   /////////////////////////////////////////////////
-  // TODO: THREAD ME
+  // OpenMP threading for tendency computation
   /////////////////////////////////////////////////
   // Use the fluxes to compute tendencies for each cell
 #pragma omp parallel for collapse(3) default(shared) private(indt, indf1,      \
@@ -629,8 +632,9 @@ void MiniWeatherSimulation::set_halo_values_z(double *state) {
   const double mnt_width = xlen / 8;
   double x, xloc, mnt_deriv;
   /////////////////////////////////////////////////
-  // TODO: THREAD ME
+  // OpenMP threading for halo values
   /////////////////////////////////////////////////
+#pragma omp parallel for collapse(2) default(shared) private(ll, i)
   for (ll = 0; ll < NUM_VARS; ll++) {
     for (i = 0; i < nx + 2 * hs; i++) {
       if (ll == ID_WMOM) {

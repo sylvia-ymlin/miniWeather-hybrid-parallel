@@ -35,9 +35,12 @@ add_definitions(-D_OUT_FREQ=${OUT_FREQ})
 add_definitions(-D_DATA_SPEC=${DATA_SPEC})
 
 # ============================================================================
-# Target 1: Serial Baseline (No parallelism)
+# Target 1: Serial Baseline (with optional OpenMP for multi-threading)
 # ============================================================================
 add_executable(miniWeather_serial src/miniWeather_serial.cpp)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(miniWeather_serial PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 # ============================================================================
 # Target 2: MPI + OpenMP (Hybrid CPU Parallelism)
