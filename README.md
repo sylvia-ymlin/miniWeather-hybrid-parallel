@@ -178,6 +178,73 @@ The observed efficiency degradation is due to **memory bandwidth saturation**:
 
 ---
 
+## Simulation Scenarios
+
+All 5 test cases from the original [miniWeather](https://github.com/mrnorman/miniWeather) are implemented:
+
+| Scenario | DATA_SPEC | Description | Recommended `sim_time` |
+|:---------|:----------|:------------|:-----------------------|
+| **Rising Thermal** | 2 | Warm bubble rises due to buoyancy, forming "mushroom cloud" | 1000s |
+| **Colliding Thermals** | 1 | Cold/warm bubbles collide, generating turbulent eddies | 700s |
+| **Mountain Gravity Waves** | 3 | Horizontal wind over stable stratification | 1500s |
+| **Density Current** | 5 | Cold front crashes into ground, propagates horizontally | 600s |
+| **Injection** | 6 | Fast cold jet injected from left boundary | 1200s |
+
+```bash
+# Run a specific scenario
+./miniWeather_mpi --data 1 --time 700   # Colliding Thermals
+./miniWeather_mpi --data 5 --time 600   # Density Current
+```
+
+---
+
+## Testing
+
+### Automated Test Suite
+
+```bash
+# Build and run all tests
+mkdir build && cd build
+cmake ..
+make -j
+make test                    # Quick tests (2 scenarios, ~30s)
+ctest -L full               # Full tests (all 5 scenarios)
+ctest -L individual -R Thermal  # Single scenario test
+```
+
+### Test Output
+
+```
+============================================================
+miniWeather Automated Test Suite
+============================================================
+Executable: ./build/miniWeather_serial
+MPI Ranks:  Serial
+Test Mode:  Quick
+============================================================
+
+[TEST] THERMAL
+----------------------------------------
+  ✓ PASSED: d_mass=-2.27e-14, d_te=-2.07e-06
+
+[TEST] DENSITY_CURRENT
+----------------------------------------
+  ✓ PASSED: d_mass=1.11e-14, d_te=-3.45e-05
+
+============================================================
+Results: 2 passed, 0 failed
+============================================================
+```
+
+### Validation Criteria (from original miniWeather)
+
+| Metric | Threshold | Explanation |
+|:-------|:----------|:------------|
+| **Mass Change** | `|d_mass| < 1e-13` | Must be machine precision |
+| **Energy Change** | `d_te < 0, |d_te| < 4.5e-5` | Must be negative (dissipation) |
+
+---
+
 ## File Structure
 
 ```
@@ -188,6 +255,7 @@ miniWeather-hybrid-parallel/
 │   ├── miniWeather_mpi_openacc.cpp # MPI + OpenACC GPU
 │   └── miniWeather_mpi_openmp45.cpp# MPI + OpenMP Target GPU
 ├── scripts/
+│   ├── test_scenarios.py           # Automated test suite
 │   ├── validate.py                 # Physics validation
 │   ├── plot_openmp_scaling.py      # Generate scaling charts
 │   └── scaling_study.py            # Automated benchmarking

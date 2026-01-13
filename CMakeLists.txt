@@ -94,11 +94,63 @@ if(ENABLE_OMP_TARGET)
 endif()
 
 # ============================================================================
-# Testing
+# Testing - Comprehensive Test Suite
 # ============================================================================
 enable_testing()
-add_test(NAME ValidationTest 
-         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/validate.py 
-                 --exe $<TARGET_FILE:miniWeather_serial> --nx 100 --nz 50 --time 5)
-add_test(NAME MPI_Test COMMAND mpiexec -n 2 ./miniWeather_mpi)
+
+# Quick sanity test for serial version
+add_test(NAME Serial_Quick
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/test_scenarios.py
+                 --exe $<TARGET_FILE:miniWeather_serial> --quick
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# Quick sanity test for MPI version  
+add_test(NAME MPI_Quick
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/test_scenarios.py
+                 --exe $<TARGET_FILE:miniWeather_mpi> --mpi 2 --quick
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# Full test suite for serial (all 5 scenarios)
+add_test(NAME Serial_Full
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/test_scenarios.py
+                 --exe $<TARGET_FILE:miniWeather_serial>
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# Full test suite for MPI (all 5 scenarios, 4 ranks)
+add_test(NAME MPI_Full
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/test_scenarios.py
+                 --exe $<TARGET_FILE:miniWeather_mpi> --mpi 4
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# Individual scenario tests (for debugging specific issues)
+add_test(NAME Thermal_Serial
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/test_scenarios.py
+                 --exe $<TARGET_FILE:miniWeather_serial> --scenario thermal --quick
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_test(NAME Collision_Serial
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/test_scenarios.py
+                 --exe $<TARGET_FILE:miniWeather_serial> --scenario collision --quick
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_test(NAME GravityWaves_Serial
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/test_scenarios.py
+                 --exe $<TARGET_FILE:miniWeather_serial> --scenario gravity_waves --quick
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_test(NAME DensityCurrent_Serial
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/test_scenarios.py
+                 --exe $<TARGET_FILE:miniWeather_serial> --scenario density_current --quick
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_test(NAME Injection_Serial
+         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/test_scenarios.py
+                 --exe $<TARGET_FILE:miniWeather_serial> --scenario injection --quick
+         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# Set test labels for filtering
+set_tests_properties(Serial_Quick MPI_Quick PROPERTIES LABELS "quick")
+set_tests_properties(Serial_Full MPI_Full PROPERTIES LABELS "full")
+set_tests_properties(Thermal_Serial Collision_Serial GravityWaves_Serial 
+                     DensityCurrent_Serial Injection_Serial PROPERTIES LABELS "individual")
 
