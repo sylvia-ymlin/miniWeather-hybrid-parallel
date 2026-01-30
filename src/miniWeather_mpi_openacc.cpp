@@ -13,7 +13,9 @@
 #include <ctime>
 #include <iostream>
 #include <mpi.h>
+#ifndef _NO_PNETCDF
 #include "pnetcdf.h"
+#endif
 #include <chrono>
 
 constexpr double pi        = 3.14159265358979323846264338327;   //Pi
